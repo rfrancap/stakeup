@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+//test
+
 void main() {
-  runApp(ApostaEsportivaApp());
+  runApp(const ApostaEsportivaApp());
 }
 
 class ApostaEsportivaApp extends StatelessWidget {
@@ -15,7 +17,7 @@ class ApostaEsportivaApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: CalculadoraPage(),
+      home: const CalculadoraPage(),
     );
   }
 }
