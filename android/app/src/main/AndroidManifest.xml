@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="betbooster"
+        android:label="Bet Booster"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -42,4 +42,9 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="BIND_GET_INSTALL_REFERRER_SERVICE" />
+<uses-permission android:name="com.android.vending.CHECK_LICENSE" />
+<uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 </manifest>

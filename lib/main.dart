@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:singular_flutter_sdk/singular.dart';
+import 'package:singular_flutter_sdk/singular_config.dart';
 
-//test
 
 void main() {
   runApp(const ApostaEsportivaApp());
+SingularConfig config = new SingularConfig('viperace_4e5d96af', '215bca3ffef58ad26b931adc0cc8bcca');
+Singular.start(config);
+  
 }
 
 class ApostaEsportivaApp extends StatelessWidget {
@@ -13,9 +17,13 @@ class ApostaEsportivaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aposta Esportiva',
+      title: 'Bet Booster',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
+        scaffoldBackgroundColor: Colors.grey[900],
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(fontSize: 18.0, fontFamily: 'Roboto', color: Colors.white),
+        ),
       ),
       home: const CalculadoraPage(),
     );
@@ -44,6 +52,20 @@ class _CalculadoraPageState extends State<CalculadoraPage> {
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Colors.orange,
+              onPrimary: Colors.white,
+              surface: Colors.grey,
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: Colors.grey[900],
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -54,6 +76,7 @@ class _CalculadoraPageState extends State<CalculadoraPage> {
   }
 
   void _calcular() {
+    Singular.event('new_calculation');
     final double stakeInicial = double.tryParse(_stakeController.text) ?? 0;
     final int numeroDias = _selectedDate?.difference(DateTime.now()).inDays ?? 0;
 
@@ -96,64 +119,151 @@ class _CalculadoraPageState extends State<CalculadoraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calculadora de Aposta'),
+        title: const Text('Bet Booster', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.orange,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _stakeController,
-              decoration: const InputDecoration(labelText: 'Stake Inicial (R\$)'),
-              keyboardType: TextInputType.number,
-            ),
-            DropdownButton<String>(
-              value: _selectedCalculation,
-              items: <String>['Valor Alvo', 'Porcentagem Diária']
-                  .map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedCalculation = newValue!;
-                  _result = '';
-                });
-              },
-            ),
-            if (_selectedCalculation == 'Valor Alvo')
-              TextField(
-                controller: _targetController,
-                decoration: const InputDecoration(labelText: 'Valor Alvo (R\$)'),
-                keyboardType: TextInputType.number,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.grey[900]!, Colors.grey[800]!],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey[850],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    spreadRadius: 5,
+                    blurRadius: 15,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            if (_selectedCalculation == 'Porcentagem Diária')
-              TextField(
-                controller: _percentageController,
-                decoration: const InputDecoration(labelText: 'Porcentagem Diária (%)'),
-                keyboardType: TextInputType.number,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField(_stakeController, 'Stake Inicial (R\$)'),
+                  const SizedBox(height: 16),
+                  _buildDropdownButton(),
+                  const SizedBox(height: 16),
+                  if (_selectedCalculation == 'Valor Alvo')
+                    _buildTextField(_targetController, 'Valor Alvo (R\$)')
+                  else
+                    _buildTextField(_percentageController, 'Porcentagem Diária (%)'),
+                  const SizedBox(height: 16),
+                  _buildDateField(),
+                  const SizedBox(height: 24),
+                  _buildCalculateButton(),
+                  const SizedBox(height: 20),
+                  _buildResultText(),
+                ],
               ),
-            TextFormField(
-              controller: _dateController,
-              decoration: const InputDecoration(labelText: 'Data Final'),
-              readOnly: true,
-              onTap: () => _selectDate(context),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _calcular,
-              child: const Text('Calcular'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _result,
-              style: const TextStyle(fontSize: 20),
-            ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.orange[300]),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.orange[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.orange),
+        ),
+      ),
+      style: const TextStyle(color: Colors.white),
+      keyboardType: TextInputType.number,
+    );
+  }
+
+  Widget _buildDropdownButton() {
+    return DropdownButtonFormField<String>(
+      value: _selectedCalculation,
+      items: <String>['Valor Alvo', 'Porcentagem Diária'].map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value, style: const TextStyle(color: Colors.white)),
+        );
+      }).toList(),
+      onChanged: (String? newValue) {
+        setState(() {
+          _selectedCalculation = newValue!;
+          _result = '';
+        });
+      },
+      dropdownColor: Colors.grey[850],
+      decoration: InputDecoration(
+        labelText: 'Tipo de Cálculo',
+        labelStyle: TextStyle(color: Colors.orange[300]),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.orange[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.orange),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateField() {
+    return TextFormField(
+      controller: _dateController,
+      decoration: InputDecoration(
+        labelText: 'Data Final',
+        labelStyle: TextStyle(color: Colors.orange[300]),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.orange[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.orange),
+        ),
+        suffixIcon: Icon(Icons.calendar_today, color: Colors.orange[300]),
+      ),
+      style: const TextStyle(color: Colors.white),
+      readOnly: true,
+      onTap: () => _selectDate(context),
+    );
+  }
+
+  Widget _buildCalculateButton() {
+    return ElevatedButton(
+      onPressed: _calcular,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.orange,
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      child: const Text('Calcular', style: TextStyle(fontSize: 18, color: Colors.white)),
+    );
+  }
+
+  Widget _buildResultText() {
+    return Text(
+      _result,
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.orange),
+      textAlign: TextAlign.center,
     );
   }
 }

@@ -1,4 +1,4 @@
-package com.example.betbooster
+package com.relab.betbooster
 
 import io.flutter.embedding.android.FlutterActivity
 
